@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="VDA Auditor">
+<meta name="theme-color" content="#0f172a">
+<title>VDA 6.3 Auditor Oficial</title>
+<style>
+:root{--bg:#0f172a;--bg2:#1e293b;--bg3:#334155;--accent:#38bdf8;--text:#f1f5f9;--text2:#94a3b8;--text3:#64748b;--border:#334155;--r:14px;--rs:8px;--danger:#ef4444;}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,sans-serif;overflow:hidden;}
+#app{display:flex;flex-direction:column;height:100dvh;}
+.topbar{background:var(--bg2);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;padding-top:max(12px,env(safe-area-inset-top));}
+.t-title{font-size:16px;font-weight:600;}.t-sub{font-size:11px;color:var(--text2);margin-top:1px;}
+.t-badge{background:var(--accent);color:#0c1a2e;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;}
+.tabs{display:flex;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0;overflow-x:auto;}
+.tab{flex:1;min-width:70px;padding:12px 4px;text-align:center;font-size:11px;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:600;}
+.page{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;display:none;}
+.page.active{display:block;}
+.pad{padding:14px;padding-bottom:max(28px,env(safe-area-inset-bottom));}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:12px;}
+.ct{font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;border-bottom:1px solid var(--border);padding-bottom:5px;margin-top:10px;}
+.btn{width:100%;padding:12px;border-radius:var(--rs);border:none;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:8px;}
+.btn-p{background:var(--accent);color:#0c1a2e;}
+.btn-s{background:var(--bg3);color:var(--text);border:1px solid var(--border);}
+.btn-danger{background:#991b1b;color:#fecaca;}
+textarea,input[type=text],input[type=date]{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);font-size:14px;padding:10px 12px;outline:none;}
+textarea{resize:none;height:65px;line-height:1.4;}
+.fl{font-size:12px;color:var(--text2);display:block;margin-bottom:4px;margin-top:8px;}
+.input-voz-container{display:flex;gap:8px;margin-top:6px;}
+.btn-mic{background-color:var(--bg3);border:1px solid var(--border);color:var(--text2);border-radius:var(--rs);width:44px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.btn-mic.listening{background-color:var(--danger) !important;color:white;animation:pulse-mic .8s infinite;}
+@keyframes pulse-mic{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.4);}50%{box-shadow:0 0 0 6px rgba(239,68,68,0);}}
+.pregunta-block{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:12px;}
+.pregunta-header{font-weight:600;font-size:13px;color:var(--text);line-height:1.4;}
+.score-sel{display:flex;gap:6px;margin-top:8px;}
+.score-opt{flex:1;height:36px;border-radius:var(--rs);border:1px solid var(--border);background:var(--bg3);color:var(--text2);font-size:12px;font-weight:700;cursor:pointer;}
+.score-opt.sel.s10{background:#166534;color:#bbf7d0;border-color:#22c55e;}
+.score-opt.sel.s8{background:#155e75;color:#a5f3fc;border-color:#06b6d4;}
+.score-opt.sel.s6{background:#713f12;color:#fde68a;border-color:#eab308;}
+.score-opt.sel.s4{background:#7c2d12;color:#fed7aa;border-color:#f97316;}
+.score-opt.sel.s0{background:#7f1d1d;color:#fecaca;border-color:#ef4444;}
+.btn-ayuda-guia{background:none;border:none;color:var(--accent);font-size:11px;cursor:pointer;padding:4px 0;text-align:left;display:inline-block;text-decoration:underline;outline:none;}
+.guia-campo-contenido{display:none;background-color:#0f172a;border-left:3px solid var(--accent);padding:10px;border-radius:var(--rs);margin-top:5px;margin-bottom:5px;font-size:12px;color:var(--text2);line-height:1.4;}
+#save-toast{position:fixed;bottom:16px;right:16px;background:rgba(15,23,42,0.95);border:1px solid var(--border);color:var(--accent);padding:8px 14px;border-radius:20px;font-size:11px;font-weight:600;display:none;z-index:2000;}
+.res-val{font-size:18px;font-weight:700;color:var(--accent);margin-top:2px;}
+</style>
+</head>
+<body>
+
+<div id="app">
+    <div class="topbar">
+        <div>
+            <div class="t-title" id="lbl-app-title">VDA 6.3 Auditor Pro</div>
+            <div class="t-sub">Mapeo Oficial VDA (26 Preguntas P6)</div>
+        </div>
+        <div class="t-badge">LOCAL STORAGE 🟢</div>
+    </div>
+
+    <div class="tabs">
+        <div class="tab active" onclick="switchPage('lista', this)">📂 Auditorías</div>
+        <div class="tab" onclick="switchPage('cabecera', this)">📋 Cabecera</div>
+        <div class="tab" onclick="switchPage('p2p5', this)">🔍 P2 - P5</div>
+        <div class="tab" onclick="switchPage('p6', this)">⚙️ Bloque P6 (26)</div>
+        <div class="tab" onclick="switchPage('p7', this)">🤝 P7</div>
+        <div class="tab" onclick="switchPage('resultados', this)">📊 Balance</div>
+    </div>
+
+    <div id="save-toast">Progreso guardado...</div>
+
+    <div id="page-lista" class="page active">
+        <div class="pad">
+            <button class="btn btn-p" onclick="crearNuevaAuditoria()">➕ Crear Nueva Auditoría</button>
+            <div style="margin-top:15px;" id="lista-auditorias-container"></div>
+        </div>
+    </div>
+
+    <div id="page-cabecera" class="page">
+        <div class="pad">
+            <div class="card">
+                <div class="ct">Datos de Auditoría</div>
+                <label class="fl">Referencia / ID:</label>
+                <input type="text" id="audit_id_field">
+                <label class="fl">Auditor:</label>
+                <input type="text" id="auditor_name">
+                <label class="fl">Proveedor / Planta:</label>
+                <input type="text" id="comercial-name">
+                <label class="fl">Fecha de Evaluación:</label>
+                <input type="date" id="audit_date">
+                <label class="fl">Proceso Específico:</label>
+                <input type="text" id="proceso_auditado" placeholder="Línea de producción, celda de manufactura...">
+            </div>
+        </div>
+    </div>
+
+    <div id="page-p2p5" class="page">
+        <div class="pad" id="contenedor-p2p5"></div>
+    </div>
+
+    <div id="page-p6" class="page">
+        <div class="pad" id="contenedor-p6"></div>
+    </div>
+
+    <div id="page-p7" class="page">
+        <div class="pad" id="contenedor-p7"></div>
+    </div>
+
+    <div id="page-resultados" class="page">
+        <div class="pad">
+            <div class="card">
+                <div class="ct">Resultado Global</div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px;">
+                    <div><div class="fl">Grado de Cumplimiento:</div><div class="res-val" id="res-total">0%</div></div>
+                    <div><div class="fl">Clasificación Final:</div><div class="res-val" id="res-clase">-</div></div>
+                </div>
+                <div style="font-size:12px; color:var(--text2); line-height:1.5;" id="res-desglose"></div>
+            </div>
+            <div class="card">
+                <div class="ct">Acciones de Datos</div>
+                <button class="btn btn-s" onclick="exportarAuditoriaJSON()">📥 Guardar Archivo JSON</button>
+                <button class="btn btn-danger" style="margin-top:20px;" onclick="eliminarAuditoriaActual()">🗑️ Eliminar Registro Activo</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const ESTRUCTURA_NORMA = {
+    "P2": {
+        titulo: "P2: Gestión de proyectos",
+        preguntas: [
+            {id:"P2.1", q:"¿Se establece una gestión de proyectos con una estructura organizativa?", h:"Líder de proyecto asignado, roles, matriz de responsabilidades e interfaces claras."},
+            {id:"P2.2", q:"¿Están planificados todos los recursos necesarios para la implementación?", h:"Disponibilidad de personal, presupuestos e infraestructura de pruebas analizada."},
+            {id:"P2.3", q:"¿Están planificados los entregables y se monitorea el progreso?", h:"Control de hitos (milestones), plan de tiempos detallado y gestión de desvíos técnicos."},
+            {id:"P2.4", q:"¿Se gestionan adecuadamente los cambios dentro del proyecto?", h:"Control de cambios formal, análisis de impacto, aprobaciones y avisos al cliente."}
+        ]
+    },
+    "P3": {
+        titulo: "P3: Planificación del desarrollo del producto y del proceso",
+        preguntas: [
+            {id:"P3.1", q:"¿Se analizan los requisitos específicos del producto y del proceso?", h:"Cuadernos de cargas del cliente, viabilidad inicial, normativas y requisitos legales."},
+            {id:"P3.2", q:"¿Se planifica en detalle el desarrollo del producto y del proceso?", h:"Plan de diseño, AMFE (FMEA) inicial de diseño/proceso y planes de control preliminares."},
+            {id:"P3.3", q:"¿Están planificados los recursos para el desarrollo?", h:"Personal calificado, software de simulación, laboratorios y talleres de prototipos contratados."}
+        ]
+    },
+    "P4": {
+        titulo: "P4: Implementación del desarrollo del producto y del proceso",
+        preguntas: [
+            {id:"P4.1", q:"¿Están disponibles los planes de control y especificaciones?", h:"Planes de control definitivos aprobados, hojas de operación e inspección en línea."},
+            {id:"P4.2", q:"¿Se demuestra la viabilidad bajo condiciones de serie?", h:"Pruebas a ritmo de serie (Run @ Rate), aprobaciones formales PPAP / VDA 2."},
+            {id:"P4.3", q:"¿Están disponibles y validados los medios de producción?", h:"Maquinarias instaladas, herramental calificado y estudios de capacidad de máquina (Cmk/Ppk)."}
+        ]
+    },
+    "P5": {
+        titulo: "P5: Gestión de proveedores",
+        preguntas: [
+            {id:"P5.1", q:"¿Se seleccionan proveedores aprobados según criterios definidos?", h:"Lista de proveedores aprobados (ASL), evaluaciones de riesgos y auditorías de entrada."},
+            {id:"P5.2", q:"¿Se consideran las capacidades y requisitos del cliente en la cadena?", h:"Traspaso de requisitos específicos del cliente (CSR) a los sub-proveedores críticos."},
+            {id:"P5.3", q:"¿Se evalúa el desempeño de calidad de los proveedores?", h:"Monitoreo de PPMs, confiabilidad de entregas (OTD) y control de planes de acción."}
+        ]
+    },
+    "P6": {
+        titulo: "P6: Análisis del proceso / Producción",
+        preguntas: [
+            // 6.1: Entradas del proceso (5 preguntas)
+            {id:"P6.1.1", q:"¿Se transfieren los resultados del desarrollo a la producción en serie?", h:"Traspaso formal de proyectos a planta, lecciones aprendidas implementadas y herramentales liberados."},
+            {id:"P6.1.2", q:"¿Están las cantidades/lotes de producción listos a tiempo en el lugar correcto?", h:"Control logístico interno, contenedores adecuados, embalajes de transporte y etiquetas de estado."},
+            {id:"P6.1.3", q:"¿Se almacenan adecuadamente las materias primas y componentes?", h:"Condiciones ambientales óptimas, protección contra daños/contaminación y áreas segregadas."},
+            {id:"P6.1.4", q:"¿Están disponibles las autorizaciones necesarias para las entradas?", h:"Liberaciones de calidad para materias primas, registros de inspección de entrada y aprobaciones técnicas."},
+            {id:"P6.1.5", q:"¿Se realiza un seguimiento de la calidad de los proveedores de entrada?", h:"Cumplimiento de acuerdos de calidad, reportes de no conformidad entrante y planes de mejora activa."},
+            
+            // 6.2: Operaciones del proceso (5 preguntas)
+            {id:"P6.2.1", q:"¿Están los procesos de producción controlados y documentados?", h:"Instrucciones de operación actualizadas en estación, parámetros de máquina definidos y liberación del arranque de serie."},
+            {id:"P6.2.2", q:"¿Se controlan los ajustes y preparaciones de las máquinas de forma segura?", h:"Liberación formal tras cambio de modelo (primera/última pieza), parámetros bloqueados contra modificaciones no autorizadas."},
+            {id:"P6.2.3", q:"¿Están vigentes las pautas de autocontrol e inspección requeridas?", h:"Ejecución de controles en la frecuencia estipulada, registros legibles y trazabilidad de las mediciones."},
+            {id:"P6.2.4", q:"¿Se gestionan correctamente las liberaciones especiales y desvíos?", h:"Permisos de desvío aprobados por el cliente, identificación clara de material bajo desvío y límites temporales."},
+            {id:"P6.2.5", q:"¿Se realiza una disposición segura de las piezas sobrantes/reprocesos?", h:"Identificación unívoca de piezas reprocesadas, áreas de trabajo limpias y segregación de scrap."},
+            
+            // 6.3: Recursos / Personal (3 preguntas oficiales: 6.3.1 - 6.3.3)
+            {id:"P6.3.1", q:"¿Tienen los colaboradores las competencias requeridas para sus tareas?", h:"Matriz de polivalencia (Skills matrix) actualizada, formación técnica demostrable y registros de entrenamiento."},
+            {id:"P6.3.2", q:"¿Conocen los operadores sus responsabilidades y autoridades?", h:"Conocimiento de criterios de rechazo, stop de línea ante fallas y objetivos de calidad de la celda."},
+            {id:"P6.3.3", q:"¿Se dispone del personal necesario para cubrir la producción?", h:"Planes de turnos, cobertura de ausencias y personal de respaldo calificado disponible (se incluye orden, limpieza y ergonomía en este control)."},
+            
+            // 6.4: Recursos materiales / Instalaciones (5 preguntas)
+            {id:"P6.4.1", q:"¿Cumplen las instalaciones con los requisitos específicos del proceso?", h:"Capacidad de máquina demostrada (Cmk), monitoreo automático de variables críticas de proceso."},
+            {id:"P6.4.2", q:"¿Se realiza un mantenimiento preventivo estructurado de equipos y moldes?", h:"Planes de mantenimiento preventivo y predictivo cumplidos, control de refacciones críticas."},
+            {id:"P6.4.3", q:"¿Se calibran y verificar los equipos de medición e inspección?", h:"Trazabilidad de calibración en laboratorios, estudios de MSA (R&R) y chequeos funcionales diarios."},
+            {id:"P6.4.4", q:"¿Están claramente identificadas las áreas de almacenamiento en línea?", h:"Delimitación de áreas de producto conforme, producto sospechoso (hold) y scrap/desecho."},
+            {id:"P6.4.5", q:"¿Están disponibles las herramientas y accesorios adecuados?", h:"Gestión de herramentales, almacenamiento seguro de moldes/troqueles y control de desgastes."},
+            
+            // 6.5: Eficacia / Resultados (4 preguntas)
+            {id:"P6.5.1", q:"¿Se han definido objetivos de calidad y rendimiento para el proceso?", h:"Monitoreo de OEE, tasa de defectos internos, scrap rate y reportes por hora en línea."},
+            {id:"P6.5.2", q:"¿Se analizan las desviaciones y se ejecutan acciones oportunas?", h:"Uso de herramientas de análisis (8D, 5 Porqués, Ishikawa), contramedidas rápidas y efectivas."},
+            {id:"P6.5.3", q:"¿Se audita regularmente el producto terminado en la línea?", h:"Auditorías de producto (Product Audits) de acuerdo a frecuencias normativas internas."},
+            {id:"P6.5.4", q:"¿Se realiza un manejo seguro y segregación de productos no conformes?", h:"Bloqueo físico inmediato (jaulas de scrap o hold), alarmas visuales y control de llaves de acceso al material rechazado."},
+            
+            // 6.6: Salidas del proceso (4 preguntas)
+            {id:"P6.6.1", q:"¿Cumplen los productos con los requisitos del cliente al salir?", h:"Inspección de auditoría final limpia, empaque aprobado y liberación logística autorizada."},
+            {id:"P6.6.2", q:"¿Se protegen los productos adecuadamente durante el embalaje?", h:"Uso de tarimas correctas, películas plásticas contra humedad/polvo y protección contra impactos."},
+            {id:"P6.6.3", q:"¿Están los contenedores y lotes identificados correctamente?", h:"Etiquetas MASTER/individuales con código de barras, número de lote legible y destino claro."},
+            {id:"P6.6.4", q:"¿Se gestiona la logística de salida bajo el principio FIFO?", h:"Control de inventarios rotativos, orden físico y digital que impida obsolescencia de componentes."}
+        ]
+    },
+    "P7": {
+        titulo: "P7: Atención al cliente / Satisfacción del cliente",
+        preguntas: [
+            {id:"P7.1", q:"¿Se cumplen los requisitos del sistema de gestión de calidad?", h:"Monitoreo de portales de cliente, reportes puntuales y certificaciones vigentes."},
+            {id:"P7.2", q:"¿Se garantiza el suministro seguro de productos al cliente?", h:"Cumplimiento de OTD, planes de contingencia validados ante paros logísticos."},
+            {id:"P7.3", q:"¿Se analizan los reclamos y se implementan contramedidas efectivas?", h:"Tiempos de respuesta a quejas de cliente (24h/10 días para 8D) y efectividad de contramedidas."}
+        ]
+    }
+};
+
+let DB = { auditorias: {}, activa: null };
+
+function init() {
+    renderizarPreguntasFisicas();
+    cargarTodoDeLocalStorage();
+    actualizarListaAuditorias();
+}
+
+function renderizarPreguntasFisicas() {
+    const contP2P5 = document.getElementById('contenedor-p2p5');
+    const contP6 = document.getElementById('contenedor-p6');
+    const contP7 = document.getElementById('contenedor-p7');
+    
+    contP2P5.innerHTML = ""; contP6.innerHTML = ""; contP7.innerHTML = "";
+
+    ["P2", "P3", "P4", "P5"].forEach(elem => {
+        contP2P5.innerHTML += `<div class="ct">${ESTRUCTURA_NORMA[elem].titulo}</div>`;
+        ESTRUCTURA_NORMA[elem].preguntas.forEach(p => { contP2P5.innerHTML += crearHTMLBloquePregunta(p); });
+    });
+
+    ["P6"].forEach(elem => {
+        contP6.innerHTML += `<div class="ct">${ESTRUCTURA_NORMA[elem].titulo} (26 puntos oficiales)</div>`;
+        ESTRUCTURA_NORMA[elem].preguntas.forEach(p => { contP6.innerHTML += crearHTMLBloquePregunta(p); });
+    });
+
+    ["P7"].forEach(elem => {
+        contP7.innerHTML += `<div class="ct">${ESTRUCTURA_NORMA[elem].titulo}</div>`;
+        ESTRUCTURA_NORMA[elem].preguntas.forEach(p => { contP7.innerHTML += crearHTMLBloquePregunta(p); });
+    });
+}
+
+function crearHTMLBloquePregunta(p) {
+    return `
+    <div class="pregunta-block" id="block_${p.id}">
+        <div class="pregunta-header">${p.id} ${p.q}</div>
+        <button type="button" class="btn-ayuda-guia" onclick="toggleGuia('guia_${p.id}')">💡 Criterio mínimo exigible</button>
+        <div id="guia_${p.id}" class="guia-campo-contenido"><strong>Guía de campo:</strong><br>${p.h}</div>
+        
+        <div class="score-sel" data-qid="${p.id}">
+            <button class="score-opt s10" onclick="seleccionarNotaMóvil('${p.id}', 10, this)">10</button>
+            <button class="score-opt s8" onclick="seleccionarNotaMóvil('${p.id}', 8, this)">8</button>
+            <button class="score-opt s6" onclick="seleccionarNotaMóvil('${p.id}', 6, this)">6</button>
+            <button class="score-opt s4" onclick="seleccionarNotaMóvil('${p.id}', 4, this)">4</button>
+            <button class="score-opt s0" onclick="seleccionarNotaMóvil('${p.id}', 0, this)">0</button>
+        </div>
+        <div class="input-voz-container">
+            <textarea id="find_${p.id}" oninput="sincronizarTextoManual('${p.id}')" placeholder="Registrar evidencias o desviaciones observadas..."></textarea>
+            <button type="button" class="btn-mic" onclick="dictarVozMóvil('${p.id}', this)">🎙️</button>
+        </div>
+    </div>`;
+}
+
+function switchPage(id, tabElement) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('page-' + id).classList.add('active');
+    tabElement.classList.add('active');
+}
+
+function toggleGuia(id) {
+    const el = document.getElementById(id);
+    el.style.display = (el.style.display === 'block') ? 'none' : 'block';
+}
+
+function crearNuevaAuditoria() {
+    const id = "VDA-" + Date.now().toString().slice(-6);
+    DB.auditorias[id] = {
+        id: id, auditor: "", proveedor: "", fecha: new Date().toISOString().slice(0,10), proceso: "",
+        scores: {}, findings: {}
+    };
+    DB.activa = id;
+    guardarEnLocalStorage();
+    cargarAuditoriaEnPantalla(id);
+    actualizarListaAuditorias();
+    switchPage('cabecera', document.querySelectorAll('.tab')[1]);
+}
+
+function cargarAuditoriaEnPantalla(id) {
+    DB.activa = id;
+    const a = DB.auditorias[id];
+    document.getElementById('lbl-app-title').textContent = "Auditoría: " + id;
+    
+    document.getElementById('audit_id_field').value = a.id;
+    document.getElementById('auditor_name').value = a.auditor || "";
+    document.getElementById('comercial-name').value = a.proveedor || "";
+    document.getElementById('audit_date').value = a.fecha || "";
+    document.getElementById('proceso_auditado').value = a.proceso || "";
+
+    document.querySelectorAll('.score-opt').forEach(b => b.classList.remove('sel'));
+    document.querySelectorAll('textarea').forEach(t => t.value = "");
+
+    Object.keys(a.scores).forEach(qid => {
+        const val = a.scores[qid];
+        const cont = document.querySelector(`[data-qid="${qid}"]`);
+        if(cont) {
+            cont.querySelectorAll('.score-opt').forEach(btn => {
+                if(btn.textContent == val) btn.classList.add('sel');
+            });
+        }
+    });
+
+    Object.keys(a.findings).forEach(qid => {
+        const txt = document.getElementById(`find_${qid}`);
+        if(txt) txt.value = a.findings[qid];
+    });
+
+    calcularResultadosVDA();
+}
+
+function seleccionarNotaMóvil(qid, nota, boton) {
+    if(!DB.activa) return;
+    const cont = boton.parentElement;
+    cont.querySelectorAll('.score-opt').forEach(b => b.classList.remove('sel'));
+    boton.classList.add('sel');
+    
+    DB.auditorias[DB.activa].scores[qid] = nota;
+    guardarEnLocalStorage();
+    calcularResultadosVDA();
+}
+
+function sincronizarTextoManual(qid) {
+    if(!DB.activa) return;
+    const txt = document.getElementById(`find_${qid}`).value;
+    DB.auditorias[DB.activa].findings[qid] = txt;
+    guardarEnLocalStorage();
+}
+
+function dictarVozMóvil(qid, boton) {
+    if(!DB.activa) return;
+    const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if(!Speech) {
+        alert("El dictado por voz no está disponible en este navegador móvil.");
+        return;
+    }
+
+    const rec = new Speech();
+    rec.lang = 'es-ES';
+    rec.interimResults = false;
+    boton.classList.add('listening');
+    rec.start();
+
+    rec.onresult = function(e) {
+        const frase = e.results[0][0].transcript;
+        const txtEl = document.getElementById(`find_${qid}`);
+        if(txtEl.value.trim() === "") {
+            txtEl.value = frase;
+        } else {
+            const ultimoChar = txtEl.value.trim().slice(-1);
+            const separador = [".", ",", "!", "?"].includes(ultimoChar) ? " " : ". ";
+            txtEl.value = txtEl.value.trim() + separador + frase;
+        }
+        DB.auditorias[DB.activa].findings[qid] = txtEl.value;
+        guardarEnLocalStorage();
+    };
+
+    rec.onspeechend = function() { rec.stop(); boton.classList.remove('listening'); };
+    rec.onerror = function() { boton.classList.remove('listening'); };
+}
+
+function calcularResultadosVDA() {
+    if(!DB.activa) return;
+    const a = DB.auditorias[DB.activa];
+    
+    let sumTotal = 0, countTotal = 0;
+    let desgloses = {};
+
+    Object.keys(ESTRUCTURA_NORMA).forEach(elem => {
+        let sumElem = 0, countElem = 0;
+        ESTRUCTURA_NORMA[elem].preguntas.forEach(p => {
+            if(a.scores[p.id] !== undefined && a.scores[p.id] !== "") {
+                const nota = parseInt(a.scores[p.id]);
+                sumElem += nota;
+                countElem += 1;
+                sumTotal += nota;
+                countTotal += 1;
+            }
+        });
+        if(countElem > 0) {
+            desgloses[elem] = Math.round((sumElem / (countElem * 10)) * 100);
+        }
+    });
+
+    if(countTotal === 0) {
+        document.getElementById('res-total').textContent = "0%";
+        document.getElementById('res-clase').textContent = "-";
+        document.getElementById('res-desglose').innerHTML = "No hay entradas evaluadas.";
+        return;
+    }
+
+    const eTotal = Math.round((sumTotal / (countTotal * 10)) * 100);
+    document.getElementById('res-total').textContent = eTotal + "%";
+
+    let clasificacion = "C";
+    if(eTotal >= 90) clasificacion = "A";
+    else if(eTotal >= 80) clasificacion = "B";
+
+    document.getElementById('res-clase').textContent = clasificacion;
+
+    let htmlDesglose = "";
+    Object.keys(desgloses).forEach(el => {
+        htmlDesglose += `<div><strong>Elemento ${el}:</strong> ${desgloses[el]}% de cumplimiento</div>`;
+    });
+    document.getElementById('res-desglose').innerHTML = htmlDesglose;
+}
+
+function guardarEnLocalStorage() {
+    localStorage.setItem('vda63_master_db_v2', JSON.stringify(DB));
+    const toast = document.getElementById('save-toast');
+    toast.style.display = 'block';
+    setTimeout(() => { toast.style.display = 'none'; }, 400);
+}
+
+function cargarTodoDeLocalStorage() {
+    const raw = localStorage.getItem('vda63_master_db_v2');
+    if(raw) {
+        try {
+            DB = JSON.parse(raw);
+            if(DB.activa && DB.auditorias[DB.activa]) {
+                cargarAuditoriaEnPantalla(DB.activa);
+            }
+        } catch(e) { console.error(e); }
+    }
+}
+
+function actualizarListaAuditorias() {
+    const cont = document.getElementById('lista-auditorias-container');
+    cont.innerHTML = "";
+    if(Object.keys(DB.auditorias).length === 0) {
+        cont.innerHTML = "<p style='font-size:13px; color:var(--text3); text-align:center; padding:20px;'>No hay auditorías guardadas en este dispositivo.</p>";
+        return;
+    }
+    Object.keys(DB.auditorias).forEach(id => {
+        const aud = DB.auditorias[id];
+        const activoStyle = (id === DB.activa) ? `border-color: var(--accent);` : '';
+        cont.innerHTML += `
+        <div class="card" style="${activoStyle}" onclick="cargarAuditoriaEnPantalla('${id}')">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <strong>📂 ${id}</strong> 
+                <span style="font-size:11px; color:var(--accent);">${aud.fecha}</span>
+            </div>
+            <div style="font-size:13px; color:var(--text2); margin-top:4px;">Proveedor: ${aud.proveedor || 'No asignado'}</div>
+        </div>`;
+    });
+}
+
+function eliminarAuditoriaActual() {
+    if(!DB.activa) return;
+    if(confirm("¿Seguro que deseas borrar permanentemente este registro?")) {
+        delete DB.auditorias[DB.activa];
+        DB.activa = Object.keys(DB.auditorias)[0] || null;
+        guardarEnLocalStorage();
+        if(DB.activa) cargarAuditoriaEnPantalla(DB.activa);
+        else location.reload();
+    }
+}
+
+function exportarAuditoriaJSON() {
+    if(!DB.activa) return;
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(DB.auditorias[DB.activa]));
+    const dl = document.createElement('a');
+    dl.setAttribute("href", dataStr);
+    dl.setAttribute("download", `VDA63_Backup_${DB.activa}.json`);
+    dl.click();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    init();
+    ['auditor_name', 'comercial-name', 'audit_date', 'proceso_auditado'].forEach(id => {
+        document.getElementById(id).addEventListener('input', () => {
+            if(!DB.activa) return;
+            const a = DB.auditorias[DB.activa];
+            a.auditor = document.getElementById('auditor_name').value;
+            a.proveedor = document.getElementById('comercial-name').value;
+            a.fecha = document.getElementById('audit_date').value;
+            a.proceso = document.getElementById('proceso_auditado').value;
+            guardarEnLocalStorage();
+            actualizarListaAuditorias();
+        });
+    });
+});
+</script>
+</body>
+</html>
+
+
+
+
+
