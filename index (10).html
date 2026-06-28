@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="VDA Auditor">
+<meta name="theme-color" content="#0f172a">
+<meta name="mobile-web-app-capable" content="yes">
+<title>VDA 6.3 Auditor Oficial - Bloque P6</title>
+<style>
+:root{--bg:#0f172a;--bg2:#1e293b;--bg3:#334155;--accent:#38bdf8;--text:#f1f5f9;--text2:#94a3b8;--text3:#64748b;--border:#334155;--r:14px;--rs:8px;}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,sans-serif;overflow:hidden;}
+#app{display:flex;flex-direction:column;height:100dvh;}
+.topbar{background:var(--bg2);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;padding-top:max(12px,env(safe-area-inset-top));}
+.t-title{font-size:16px;font-weight:600;}.t-sub{font-size:11px;color:var(--text2);margin-top:1px;}
+.t-badge{background:var(--accent);color:#0c1a2e;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;}
+.tabs{display:flex;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0;overflow-x:auto;}
+.tab{flex:1;min-width:100px;padding:12px 4px;text-align:center;font-size:12px;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:600;}
+.page{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;display:none;}
+.page.active{display:block;}
+.pad{padding:14px;padding-bottom:max(28px,env(safe-area-inset-bottom));}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:12px;}
+.ct{font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;border-bottom:1px solid var(--border);padding-bottom:5px;margin-top:10px;}
+.btn{width:100%;padding:12px;border-radius:var(--rs);border:none;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:8px;}
+.btn-p{background:var(--accent);color:#0c1a2e;}
+.btn-s{background:var(--bg3);color:var(--text);border:1px solid var(--border);}
+.btn-danger{background:#991b1b;color:#fecaca;}
+textarea,input[type=text],input[type=date]{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);font-size:14px;padding:10px 12px;outline:none;}
+textarea{resize:none;height:65px;line-height:1.4;}
+.fl{font-size:12px;color:var(--text2);display:block;margin-bottom:4px;margin-top:8px;}
+.input-voz-container{display:flex;gap:8px;margin-top:6px;}
+.btn-mic{background-color:var(--bg3);border:1px solid var(--border);color:var(--text2);border-radius:var(--rs);width:44px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.btn-mic.listening{background-color:#ef4444 !important;color:white;animation:pulse-mic .8s infinite;}
+@keyframes pulse-mic{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.4);}50%{box-shadow:0 0 0 6px rgba(239,68,68,0);}}
+.pregunta-block{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:12px;}
+.pregunta-header{font-weight:600;font-size:13px;color:var(--text);line-height:1.4;}
+.score-sel{display:flex;gap:6px;margin-top:8px;}
+.score-opt{flex:1;height:36px;border-radius:var(--rs);border:1px solid var(--border);background:var(--bg3);color:var(--text2);font-size:12px;font-weight:700;cursor:pointer;}
+.score-opt.sel.s10{background:#166534;color:#bbf7d0;border-color:#22c55e;}
+.score-opt.sel.s8{background:#155e75;color:#a5f3fc;border-color:#06b6d4;}
+.score-opt.sel.s6{background:#713f12;color:#fde68a;border-color:#eab308;}
+.score-opt.sel.s4{background:#7c2d12;color:#fed7aa;border-color:#f97316;}
+.score-opt.sel.s0{background:#7f1d1d;color:#fecaca;border-color:#ef4444;}
+.btn-ayuda-guia{background:none;border:none;color:var(--accent);font-size:11px;cursor:pointer;padding:4px 0;text-align:left;display:inline-block;text-decoration:underline;outline:none;}
+.guia-campo-contenido{display:none;background-color:#0f172a;border-left:3px solid var(--accent);padding:10px;border-radius:var(--rs);margin-top:5px;margin-bottom:5px;font-size:12px;color:var(--text2);line-height:1.4;}
+#save-toast{position:fixed;bottom:16px;right:16px;background:rgba(15,23,42,0.95);border:1px solid var(--border);color:var(--accent);padding:8px 14px;border-radius:20px;font-size:11px;font-weight:600;display:none;z-index:2000;}
+.res-val{font-size:18px;font-weight:700;color:var(--accent);margin-top:2px;}
+.ia-status-bar{font-size:11px;color:var(--text2);margin-top:6px;background:rgba(56,189,248,0.05);padding:6px 10px;border-radius:6px;border:1px dashed rgba(56,189,248,0.2);display:none;}
+/* Estilos para el módulo fotográfico */
+.photo-section{margin-top:10px;border-top:1px dashed var(--border);padding-top:10px;}
+.photo-gallery{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;}
+.photo-container{position:relative;width:70px;height:70px;border-radius:6px;overflow:hidden;border:1px solid var(--border);}
+.photo-container img{width:100%;height:100%;object-fit:cover;}
+.photo-delete{position:absolute;top:2px;right:2px;background:rgba(239,68,68,0.85);color:white;border:none;border-radius:50%;width:18px;height:18px;font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+</style>
+</head>
+<body>
+
+<div id="app">
+    <div class="topbar">
+        <div>
+            <div class="t-title" id="lbl-app-title">VDA 6.3 Auditor P6</div>
+            <div class="t-sub">Solo Proceso Operativo + Registro Fotográfico Cámara</div>
+        </div>
+        <div class="t-badge">P6 + FOTOS 📸</div>
+    </div>
+
+    <div class="tabs">
+        <div class="tab active" onclick="switchPage('lista', this)">📂 Auditorías</div>
+        <div class="tab" onclick="switchPage('cabecera', this)">📋 Cabecera</div>
+        <div class="tab" onclick="switchPage('p6', this)">⚙️ Evaluación P6</div>
+        <div class="tab" onclick="switchPage('resultados', this)">📊 Balance Final</div>
+    </div>
+
+    <div id="save-toast">Progreso guardado...</div>
+
+    <div id="page-lista" class="page active">
+        <div class="pad">
+            <button class="btn btn-p" onclick="crearNuevaAuditoria()">➕ Crear Nueva Auditoría</button>
+            <button class="btn btn-s" onclick="document.getElementById('import-file-input').click()">📥 Importar Sesión JSON</button>
+            <input type="file" id="import-file-input" style="display:none;" onchange="importarAuditoriaJSON(this)">
+            <div style="margin-top:15px;" id="lista-auditorias-container"></div>
+        </div>
+    </div>
+
+    <div id="page-cabecera" class="page">
+        <div class="pad">
+            <div class="card">
+                <div class="ct">Datos de Control Financiero y Técnico</div>
+                <label class="fl">Referencia de Auditoría / ID:</label>
+                <input type="text" id="audit_id_field">
+                <label class="fl">Auditor Lider:</label>
+                <input type="text" id="auditor_name">
+                <label class="fl">Proveedor / Planta de Fabricación:</label>
+                <input type="text" id="comercial-name">
+                <label class="fl">Fecha Oficial de Evaluación:</label>
+                <input type="date" id="audit_date">
+                <label class="fl">Proceso Productivo Específico:</label>
+                <input type="text" id="proceso_auditado" placeholder="Ej. Inyección de Plásticos, Soldadura Robótica...">
+            </div>
+            <div class="card">
+                <div class="ct">Configuración del Analista de IA Alternativo</div>
+                <label class="fl">API Key de OpenRouter:</label>
+                <input type="text" id="openrouter_key" placeholder="sk-or-v1-...">
+            </div>
+        </div>
+    </div>
+
+    <div id="page-p6" class="page">
+        <div class="pad" id="contenedor-p6"></div>
+    </div>
+
+    <div id="page-resultados" class="page">
+        <div class="pad">
+            <div class="card">
+                <div class="ct">Resultado Técnico Consolidado (Elemento P6)</div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px;">
+                    <div><div class="fl">Grado de Cumplimiento (EP6):</div><div class="res-val" id="res-total">0%</div></div>
+                    <div><div class="fl">Clasificación de Calidad:</div><div class="res-val" id="res-clase">-</div></div>
+                </div>
+                <div style="font-size:12px; color:var(--text2); line-height:1.5;" id="res-desglose"></div>
+            </div>
+            <div class="card">
+                <div class="ct">Módulo Central de Inteligencia Artificial</div>
+                <button class="btn btn-p" onclick="analizarTodosLosHallazgosConIA()">🤖 Procesar Desviaciones por IA Automotriz</button>
+                <div style="margin-top:10px; font-size:12px; color:var(--text2);" id="ia-global-log"></div>
+            </div>
+            <div class="card">
+                <div class="ct">Acciones del Dispositivo</div>
+                <button class="btn btn-s" onclick="exportarAuditoriaJSON()">📤 Respaldar Auditoría Activa (.json)</button>
+                <button class="btn btn-danger" style="margin-top:25px;" onclick="eliminarAuditoriaActual()">🗑️ Eliminar Registro Activo de la Memoria</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const ESTRUCTURA_NORMA = {
+    "P6": {
+        titulo: "P6: Análisis del proceso / Producción",
+        preguntas: [
+            // 6.1: Entradas (5 preguntas)
+            {id:"P6.1.1", q:"¿Se transfieren los resultados del desarrollo a la producción en serie?", h:"Traspaso formal de proyectos a planta, lecciones aprendidas e infraestructura liberada."},
+            {id:"P6.1.2", q:"¿Están las cantidades/lotes de producción listos a tiempo en el lugar correcto?", h:"Control logístico interno, contenedores adecuados, embalajes de transporte y etiquetas de estado."},
+            {id:"P6.1.3", q:"¿Se almacenan adecuadamente las materias primas y componentes?", h:"Condiciones ambientales óptimas, protección contra daños/contaminación y áreas segregadas."},
+            {id:"P6.1.4", q:"¿Están disponibles las autorizaciones necesarias para las entradas?", h:"Liberaciones de calidad para materias primas, registros de inspección de entrada y aprobaciones técnicas."},
+            {id:"P6.1.5", q:"¿Se realiza un seguimiento de la calidad de los proveedores de entrada?", h:"Cumplimiento de acuerdos de calidad, reportes de no conformidad entrante y planes de mejora activa."},
+            
+            // 6.2: Operaciones (5 preguntas)
+            {id:"P6.2.1", q:"¿Están los procesos de producción controlados y documentados?", h:"Instrucciones de operación actualizadas en estación, parámetros de máquina definidos y liberación del arranque de serie."},
+            {id:"P6.2.2", q:"¿Se controlan los ajustes y preparaciones de las máquinas de forma segura?", h:"Liberación formal tras cambio de modelo (primera/última pieza), parámetros bloqueados contra modificaciones no autorizadas."},
+            {id:"P6.2.3", q:"¿Están vigentes las pautas de autocontrol e inspección requeridas?", h:"Ejecución de controles en la frecuencia estipulada, registros legibles y trazabilidad de las mediciones."},
+            {id:"P6.2.4", q:"¿Se gestionan correctamente las liberaciones especiales y desvíos?", h:"Permisos de desvío aprobados por el cliente, identificación clara de material bajo desvío y límites temporales."},
+            {id:"P6.2.5", q:"¿Se realiza una disposición segura de las piezas sobrantes/reprocesos?", h:"Identificación unívoca de piezas reprocesadas, áreas de trabajo limpias y segregación de scrap."},
+            
+            // 6.3: Personal (3 preguntas oficiales)
+            {id:"P6.3.1", q:"¿Tienen los colaboradores las competencias requeridas para sus tareas?", h:"Matriz de polivalencia (Skills matrix) actualizada, formación técnica demostrable y registros de entrenamiento."},
+            {id:"P6.3.2", q:"¿Conocen los operadores sus responsabilidades y autoridades?", h:"Conocimiento de criterios de rechazo, stop de línea ante fallas y objetivos de calidad de la celda."},
+            {id:"P6.3.3", q:"¿Se dispone del personal necesario para cubrir la producción?", h:"Planes de turnos, cobertura de ausencias y personal de respaldo calificado disponible."},
+            
+            // 6.4: Recursos materiales (5 preguntas)
+            {id:"P6.4.1", q:"¿Cumplen las instalaciones con los requisitos específicos del proceso?", h:"Capacidad de máquina demostrada (Cmk), monitoreo automático de variables críticas de proceso."},
+            {id:"P6.4.2", q:"¿Se realiza un mantenimiento preventivo estructurado de equipos y moldes?", h:"Planes de mantenimiento preventivo y predictivo cumplidos, control de refacciones críticas."},
+            {id:"P6.4.3", q:"¿Se calibran y verifican los equipos de medición e inspección?", h:"Trazabilidad de calibración en laboratorios, estudios de MSA (R&R) y chequeos funcionales diarios."},
+            {id:"P6.4.4", q:"¿Están claramente identificadas las áreas de almacenamiento en línea?", h:"Delimitación de áreas de producto conforme, producto sospechoso (hold) y scrap/desecho."},
+            {id:"P6.4.5", q:"¿Están disponibles las herramientas y accesorios adecuados?", h:"Gestión de herramentales, almacenamiento seguro de moldes/troqueles y control de desgastes."},
+            
+            // 6.5: Eficacia / Resultados (4 preguntas)
+            {id:"P6.5.1", q:"¿Se han definido objetivos de calidad y rendimiento para el proceso?", h:"Monitoreo de OEE, tasa de defectos internos, scrap rate y reportes por hora en línea."},
+            {id:"P6.5.2", q:"¿Se analizan las desviaciones y se ejecutan acciones oportunas?", h:"Uso de herramientas de análisis (8D, 5 Porqués, Ishikawa), contramedidas rápidas y efectivas."},
+            {id:"P6.5.3", q:"¿Se audita regularmente el producto terminado en la línea?", h:"Auditorías de producto (Product Audits) de acuerdo a frecuencias normativas internas."},
+            {id:"P6.5.4", q:"¿Se realiza un manejo seguro y segregación de productos no conformes?", h:"Bloqueo físico inmediato (jaulas de scrap o hold), alarmas visuales y control de llaves de acceso al material rechazado."},
+            
+            // 6.6: Salidas (4 preguntas)
+            {id:"P6.6.1", q:"¿Cumplen los productos con los requisitos del cliente al salir?", h:"Inspección de auditoría final limpia, empaque aprobado y liberación logística autorizada."},
+            {id:"P6.6.2", q:"¿Se protegen los productos adecuadamente durante el embalaje?", h:"Uso de tarimas correctas, películas plásticas contra humedad/polvo y protección contra impactos."},
+            {id:"P6.6.3", q:"¿Están los contenedores y lotes identificados correctamente?", h:"Etiquetas MASTER/individuales con código de barras, número de lote legible y destino claro."},
+            {id:"P6.6.4", q:"¿Se gestionan la logística de salida bajo el principio FIFO?", h:"Control de inventarios rotativos, orden físico y digital que impida obsolescencia de componentes."}
+        ]
+    }
+};
+
+let DB = { auditorias: {}, activa: null };
+
+function init() {
+    renderizarEstructuraPreguntas();
+    recuperarDatosDeMemoria();
+    refrescarListaVisualAuditorias();
+}
+
+function renderizarEstructuraPreguntas() {
+    const cP6 = document.getElementById('contenedor-p6');
+    cP6.innerHTML = "";
+
+    ["P6"].forEach(b => {
+        cP6.innerHTML += `<div class="ct">${ESTRUCTURA_NORMA[b].titulo} (26 Requisitos Reales VDA)</div>`;
+        ESTRUCTURA_NORMA[b].preguntas.forEach(p => {
+            cP6.innerHTML += `
+            <div class="pregunta-block" id="block_${p.id}">
+                <div class="pregunta-header">${p.id} ${p.q}</div>
+                <button type="button" class="btn-ayuda-guia" onclick="conmutarVisibilidadAyuda('guia_${p.id}')">💡 Criterio mínimo exigible</button>
+                <div id="guia_${p.id}" class="guia-campo-contenido"><strong>Guía de campo:</strong><br>${p.h}</div>
+                
+                <div class="score-sel" data-qid="${p.id}">
+                    <button class="score-opt s10" onclick="asignarNota('${p.id}', 10, this)">10</button>
+                    <button class="score-opt s8" onclick="asignarNota('${p.id}', 8, this)">8</button>
+                    <button class="score-opt s6" onclick="asignarNota('${p.id}', 6, this)">6</button>
+                    <button class="score-opt s4" onclick="asignarNota('${p.id}', 4, this)">4</button>
+                    <button class="score-opt s0" onclick="asignarNota('${p.id}', 0, this)">0</button>
+                </div>
+                <div class="input-voz-container">
+                    <textarea id="find_${p.id}" oninput="sincronizarEscrituraManual('${p.id}')" placeholder="Registrar evidencias, hallazgos o desvíos técnicos observados..."></textarea>
+                    <button type="button" class="btn-mic" onclick="activarDictadoVoz('${p.id}', this)">🎙️</button>
+                </div>
+
+                <div class="photo-section">
+                    <button class="btn btn-s" style="margin-top:0; padding:6px 12px; font-size:12px;" onclick="document.getElementById('cam_${p.id}').click()">📷 Hacer / Añadir Foto</button>
+                    <input type="file" id="cam_${p.id}" style="display:none;" accept="image/*" capture="environment" onchange="procesarFotoEntrada('${p.id}', this)">
+                    <div class="photo-gallery" id="gallery_${p.id}"></div>
+                </div>
+
+                <div class="ia-status-bar" id="iastatus_${p.id}"></div>
+            </div>`;
+        });
+    });
+}
+
+function switchPage(id, tabElement) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('page-' + id).classList.add('active');
+    tabElement.classList.add('active');
+}
+
+function conmutarVisibilidadAyuda(id) {
+    const el = document.getElementById(id);
+    el.style.display = (el.style.display === 'block') ? 'none' : 'block';
+}
+
+function crearNuevaAuditoria() {
+    const id = "AUD-" + Date.now().toString().slice(-5);
+    DB.auditorias[id] = {
+        id: id, auditor: "", proveedor: "", fecha: new Date().toISOString().slice(0,10), proceso: "",
+        scores: {}, findings: {}, ia_reviews: {}, photos: {}
+    };
+    DB.activa = id;
+    guardarEnMemoriaLocal();
+    mostrarAuditoriaSeleccionada(id);
+    refrescarListaVisualAuditorias();
+    switchPage('cabecera', document.querySelectorAll('.tab')[1]);
+}
+
+function mostrarAuditoriaSeleccionada(id) {
+    DB.activa = id;
+    const aud = DB.auditorias[id];
+    if(!aud.photos) aud.photos = {};
+    
+    document.getElementById('lbl-app-title').textContent = "Auditoría: " + id;
+    document.getElementById('audit_id_field').value = aud.id;
+    document.getElementById('auditor_name').value = aud.auditor || "";
+    document.getElementById('comercial-name').value = aud.proveedor || "";
+    document.getElementById('audit_date').value = aud.fecha || "";
+    document.getElementById('proceso_auditado').value = aud.proceso || "";
+
+    document.querySelectorAll('.score-opt').forEach(b => b.classList.remove('sel'));
+    document.querySelectorAll('textarea').forEach(t => t.value = "");
+    document.querySelectorAll('.photo-gallery').forEach(g => g.innerHTML = "");
+    document.querySelectorAll('.ia-status-bar').forEach(s => { s.style.display = 'none'; s.textContent = ''; });
+
+    Object.keys(aud.scores).forEach(qid => {
+        const nota = aud.scores[qid];
+        const bloque = document.querySelector(`[data-qid="${qid}"]`);
+        if(bloque) {
+            bloque.querySelectorAll('.score-opt').forEach(btn => {
+                if(btn.textContent == nota) btn.classList.add('sel');
+            });
+        }
+    });
+
+    Object.keys(aud.findings).forEach(qid => {
+        const textEl = document.getElementById(`find_${qid}`);
+        if(textEl) textEl.value = aud.findings[qid];
+    });
+
+    Object.keys(aud.photos).forEach(qid => {
+        renderizarFotosPregunta(qid);
+    });
+
+    Object.keys(aud.ia_reviews || {}).forEach(qid => {
+        const bar = document.getElementById(`iastatus_${qid}`);
+        if(bar && aud.ia_reviews[qid]) {
+            bar.style.display = 'block';
+            bar.innerHTML = "<strong>Análisis IA VDA:</strong> " + aud.ia_reviews[qid];
+        }
+    });
+
+    ejecutarCalculosVDA();
+}
+
+// PROCESAMIENTO Y COMPRESIÓN DE IMÁGENES
+function procesarFotoEntrada(qid, input) {
+    if(!DB.activa || !input.files.length) return;
+    const file = input.files[0];
+    const reader = new FileReader();
+
+    reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+            // Escalado óptimo para mantener balance de almacenamiento en iPhone (Max 800px ancho)
+            const canvas = document.createElement('canvas');
+            const maxDimension = 800;
+            let width = img.width;
+            let height = img.height;
+
+            if (width > height) {
+                if (width > maxDimension) { height *= maxDimension / width; width = maxDimension; }
+            } else {
+                if (height > maxDimension) { width *= maxDimension / height; height = maxDimension; }
+            }
+            canvas.width = width;
+            canvas.height = height;
+            
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            
+            // Guardamos como JPEG de calidad media-alta (.7) para balancear visual y espacio
+            const base64Data = canvas.toDataURL('image/jpeg', 0.7);
+            
+            const aud = DB.auditorias[DB.activa];
+            if(!aud.photos[qid]) aud.photos[qid] = [];
+            aud.photos[qid].push(base64Data);
+            
+            guardarEnMemoriaLocal();
+            renderizarFotosPregunta(qid);
+            input.value = ""; // Reset del input
+        };
+        img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+}
+
+function renderizarFotosPregunta(qid) {
+    const contenedor = document.getElementById(`gallery_${qid}`);
+    contenedor.innerHTML = "";
+    if(!DB.activa) return;
+    
+    const fotos = DB.auditorias[DB.activa].photos[qid] || [];
+    fotos.forEach((fotoData, index) => {
+        contenedor.innerHTML += `
+        <div class="photo-container">
+            <img src="${fotoData}" onclick="abrirFotoCompleta('${fotoData}')">
+            <button class="photo-delete" onclick="eliminarFoto('${qid}', ${index})">✕</button>
+        </div>`;
+    });
+}
+
+function eliminarFoto(qid, index) {
+    if(!DB.activa) return;
+    if(confirm("¿Eliminar esta fotografía de la evidencia?")) {
+        DB.auditorias[DB.activa].photos[qid].splice(index, 1);
+        guardarEnMemoriaLocal();
+        renderizarFotosPregunta(qid);
+    }
+}
+
+function abrirFotoCompleta(data) {
+    const w = window.open();
+    w.document.write(`<body style="margin:0;background:#000;display:flex;align-items:center;justify-content:center;"><img src="${data}" style="max-width:100%;max-height:100%;"></body>`);
+}
+
+function asignarNota(qid, nota, b) {
+    if(!DB.activa) return;
+    b.parentElement.querySelectorAll('.score-opt').forEach(opt => opt.classList.remove('sel'));
+    b.classList.add('sel');
+    DB.auditorias[DB.activa].scores[qid] = nota;
+    guardarEnMemoriaLocal();
+    ejecutarCalculosVDA();
+}
+
+function sincronizarEscrituraManual(qid) {
+    if(!DB.activa) return;
+    DB.auditorias[DB.activa].findings[qid] = document.getElementById(`find_${qid}`).value;
+    guardarEnMemoriaLocal();
+}
+
+// ─── VOZ: compatible iOS Safari + Android Chrome ──────────────────────────────
+let _micActivo = null; // referencia global para evitar instancias simultáneas
+
+function activarDictadoVoz(qid, b) {
+    if(!DB.activa) return;
+
+    // Si ya hay una instancia activa, la paramos (toggle off)
+    if(_micActivo) {
+        try { _micActivo.stop(); } catch(e){}
+        _micActivo = null;
+        b.classList.remove('listening');
+        return;
+    }
+
+    const Recognizer = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if(!Recognizer) {
+        // Fallback: en móviles sin API de voz, abrimos teclado
+        const txtArea = document.getElementById(`find_${qid}`);
+        txtArea.focus();
+        alert("Tu navegador no admite dictado por voz. Escribe el hallazgo directamente.");
+        return;
+    }
+
+    const api = new Recognizer();
+    api.lang = 'es-ES';
+    api.continuous = false;      // iOS Safari solo admite false
+    api.interimResults = false;  // evita resultados parciales que duplican texto
+    api.maxAlternatives = 1;
+
+    _micActivo = api;
+    b.classList.add('listening');
+
+    // Iniciamos directamente — iOS Safari exige que .start() ocurra
+    // en el mismo call stack que el evento touch/click del usuario.
+    try {
+        api.start();
+    } catch(e) {
+        // Si ya había una instancia corriendo en el navegador, esperamos y reintentamos
+        setTimeout(() => { try { api.start(); } catch(e2) { b.classList.remove('listening'); _micActivo = null; } }, 300);
+    }
+
+    api.onresult = function(e) {
+        // Tomamos el último resultado final
+        let textoNuevo = "";
+        for(let i = e.resultIndex; i < e.results.length; i++) {
+            if(e.results[i].isFinal) textoNuevo += e.results[i][0].transcript;
+        }
+        if(textoNuevo.trim()) {
+            const txtArea = document.getElementById(`find_${qid}`);
+            const previo = txtArea.value.trim();
+            txtArea.value = previo ? previo + ". " + textoNuevo.trim() : textoNuevo.trim();
+            DB.auditorias[DB.activa].findings[qid] = txtArea.value;
+            guardarEnMemoriaLocal();
+        }
+    };
+
+    api.onend = function() {
+        b.classList.remove('listening');
+        _micActivo = null;
+    };
+
+    api.onerror = function(e) {
+        b.classList.remove('listening');
+        _micActivo = null;
+        // 'not-allowed' = permiso denegado; 'no-speech' = silencio (no es error real)
+        if(e.error === 'not-allowed') {
+            alert("Permiso de micrófono denegado. Ve a Ajustes del navegador y activa el micrófono para esta página.");
+        }
+        // Para 'no-speech' y 'aborted' no mostramos error, es comportamiento normal
+    };
+}
+
+function ejecutarCalculosVDA() {
+    if(!DB.activa) return;
+    const aud = DB.auditorias[DB.activa];
+    let nAcumulada = 0, qEvaluadas = 0;
+    let nSubbloques = { "6.1": {n:0,q:0}, "6.2": {n:0,q:0}, "6.3": {n:0,q:0}, "6.4": {n:0,q:0}, "6.5": {n:0,q:0}, "6.6": {n:0,q:0} };
+
+    ESTRUCTURA_NORMA["P6"].preguntas.forEach(p => {
+        if(aud.scores[p.id] !== undefined && aud.scores[p.id] !== "") {
+            const valor = parseInt(aud.scores[p.id]);
+            nAcumulada += valor; qEvaluadas++;
+            
+            // Subclasificar por sub-capítulo (ej: P6.1, P6.2...)
+            const subKey = p.id.substring(0,4); 
+            if(nSubbloques[subKey]) { nSubbloques[subKey].n += valor; nSubbloques[subKey].q++; }
+        }
+    });
+
+    if(qEvaluadas === 0) {
+        document.getElementById('res-total').textContent = "0%";
+        document.getElementById('res-clase').textContent = "-";
+        document.getElementById('res-desglose').innerHTML = "Sin registros evaluados.";
+        return;
+    }
+
+    const totalCumplimiento = Math.round((nAcumulada / (qEvaluadas * 10)) * 100);
+    document.getElementById('res-total').textContent = totalCumplimiento + "%";
+
+    let rango = "C (No aprobado)";
+    if(totalCumplimiento >= 90) rango = "A (Capacidad total)";
+    else if(totalCumplimiento >= 80) rango = "B (Capacidad condicional)";
+    document.getElementById('res-clase').textContent = rango;
+
+    let resHtml = "";
+    Object.keys(nSubbloques).forEach(k => {
+        const porc = nSubbloques[k].q > 0 ? Math.round((nSubbloques[k].n / (nSubbloques[k].q * 10)) * 100) : 0;
+        resHtml += `<div><strong>Capítulo ${k}:</strong> ${porc}% de conformidad (${nSubbloques[k].q} preguntas).</div>`;
+    });
+    document.getElementById('res-desglose').innerHTML = resHtml;
+}
+
+async function analizarTodosLosHallazgosConIA() {
+    if(!DB.activa) return;
+    const key = document.getElementById('openrouter_key').value.trim();
+    if(!key) { alert("Introduce tu API Key en la pestaña Cabecera."); return; }
+    const aud = DB.auditorias[DB.activa];
+    const logGlobal = document.getElementById('ia-global-log');
+    logGlobal.innerHTML = "Analizando desviaciones operativas con IA...<br>";
+
+    for(let p of ESTRUCTURA_NORMA["P6"].preguntas) {
+        const txt = (aud.findings[p.id] || "").trim();
+        if(txt.length > 3) {
+            logGlobal.innerHTML += `Procesando requisito ${p.id}...<br>`;
+            try {
+                const promptText = `Como auditor automotriz experto VDA 6.3, analiza el siguiente hallazgo operativo en la pregunta ${p.id} ("${p.q}"). Desviación reportada: "${txt}". Evalúa el impacto potencial en el producto final de producción en serie y provee una recomendación de contramedida en 2 líneas.`;
+                const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+                    method: "POST",
+                    headers: { "Authorization": "Bearer " + key, "Content-Type": "application/json" },
+                    body: JSON.stringify({ model: "google/gemini-2.5-flash", messages: [{ role: "user", content: promptText }] })
+                });
+                const data = await response.json();
+                const aiResult = data.choices[0].message.content.trim();
+                if(!aud.ia_reviews) aud.ia_reviews = {};
+                aud.ia_reviews[p.id] = aiResult;
+                const uiBar = document.getElementById(`iastatus_${p.id}`);
+                if(uiBar) { uiBar.style.display = 'block'; uiBar.innerHTML = "<strong>Análisis IA VDA:</strong> " + aiResult; }
+            } catch(err) { console.error(err); }
+        }
+    }
+    logGlobal.innerHTML += "<strong>¡Análisis completado!</strong>";
+    guardarEnMemoriaLocal();
+}
+
+function guardarEnMemoriaLocal() {
+    localStorage.setItem('vda63_prod_v3_master', JSON.stringify(DB));
+    const t = document.getElementById('save-toast');
+    t.style.display = 'block'; setTimeout(() => { t.style.display = 'none'; }, 350);
+}
+
+function recuperarDatosDeMemoria() {
+    const raw = localStorage.getItem('vda63_prod_v3_master');
+    const savedKey = localStorage.getItem('vda63_or_key');
+    if(savedKey) document.getElementById('openrouter_key').value = savedKey;
+    if(raw) {
+        try {
+            DB = JSON.parse(raw);
+            if(DB.activa && DB.auditorias[DB.activa]) mostrarAuditoriaSeleccionada(DB.activa);
+        } catch(e) { console.error(e); }
+    }
+}
+
+function refrescarListaVisualAuditorias() {
+    const cont = document.getElementById('lista-auditorias-container');
+    cont.innerHTML = "";
+    if(Object.keys(DB.auditorias).length === 0) {
+        cont.innerHTML = "<p style='font-size:12px; color:var(--text3); text-align:center; padding:30px;'>No existen auditorías guardadas.</p>"; return;
+    }
+    Object.keys(DB.auditorias).forEach(id => {
+        const a = DB.auditorias[id];
+        const actStyle = (id === DB.activa) ? 'border-color: var(--accent); background: rgba(56,189,248,0.02);' : '';
+        cont.innerHTML += `
+        <div class="card" style="${actStyle}" onclick="mostrarAuditoriaSeleccionada('${id}')">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <strong>📂 Código: ${id}</strong> <span style="font-size:11px; color:var(--accent);">${a.fecha}</span>
+            </div>
+            <div style="font-size:12px; color:var(--text2); margin-top:5px;">Proceso: ${a.proceso || 'No definido'}</div>
+        </div>`;
+    });
+}
+
+function eliminarAuditoriaActual() {
+    if(!DB.activa) return;
+    if(confirm("¿Eliminar permanentemente este registro del almacenamiento local?")) {
+        delete DB.auditorias[DB.activa];
+        DB.activa = Object.keys(DB.auditorias)[0] || null;
+        guardarEnMemoriaLocal();
+        if(DB.activa) mostrarAuditoriaSeleccionada(DB.activa); else location.reload();
+    }
+}
+
+function exportarAuditoriaJSON() {
+    if(!DB.activa) return;
+    const s = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(DB.auditorias[DB.activa]));
+    const link = document.createElement('a');
+    link.setAttribute("href", s);
+    link.setAttribute("download", `VDA63_P6_Auditoria_${DB.activa}.json`);
+    link.click();
+}
+
+function importarAuditoriaJSON(input) {
+    const file = input.files[0]; if(!file) return;
+    const r = new FileReader();
+    r.onload = function(e) {
+        try {
+            const data = JSON.parse(e.target.result);
+            if(data.id) {
+                DB.auditorias[data.id] = data; DB.activa = data.id;
+                guardarEnMemoriaLocal(); mostrarAuditoriaSeleccionada(data.id); refrescarListaVisualAuditorias();
+                alert("Auditoría importada correctamente.");
+            }
+        } catch(err) { alert("Archivo JSON no válido."); }
+    };
+    r.readAsText(file);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    init();
+    ['auditor_name', 'comercial-name', 'audit_date', 'proceso_auditado'].forEach(id => {
+        document.getElementById(id).addEventListener('input', () => {
+            if(!DB.activa) return;
+            const a = DB.auditorias[DB.activa];
+            a.auditor = document.getElementById('auditor_name').value;
+            a.proveedor = document.getElementById('comercial-name').value;
+            a.fecha = document.getElementById('audit_date').value;
+            a.proceso = document.getElementById('proceso_auditado').value;
+            guardarEnMemoriaLocal(); refrescarListaVisualAuditorias();
+        });
+    });
+    document.getElementById('openrouter_key').addEventListener('input', (e) => {
+        localStorage.setItem('vda63_or_key', e.target.value.trim());
+    });
+});
+</script>
+</body>
+</html>
+
+
